@@ -1,6 +1,10 @@
-package ar.edu.unlu.bdd.servidores;
+package ar.edu.unlu.bdd;
 
-public class ServidorPostgreSQL {
+/**
+ * Hello world!
+ *
+ */
+public class AppAmbienteLocal {
     public static void main(String[] args) {
         System.out.println("Hello World!");
     }
