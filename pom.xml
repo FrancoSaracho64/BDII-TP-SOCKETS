@@ -28,5 +28,11 @@
       <version>42.7.3</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.firebirdsql.jdbc</groupId>
+      <artifactId>jaybird</artifactId>
+      <version>6.0.1</version>
+    </dependency>
+
   </dependencies>
 </project>
