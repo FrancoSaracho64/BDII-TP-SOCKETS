@@ -1,4 +1,4 @@
-package $org.example;
+package ar.edu.unlu.bdd;
 
 /**
  * Hello world!

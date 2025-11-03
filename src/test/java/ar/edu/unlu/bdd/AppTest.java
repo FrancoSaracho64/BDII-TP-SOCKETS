@@ -1,4 +1,4 @@
-package $org.example;
+package ar.edu.unlu.bdd;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
