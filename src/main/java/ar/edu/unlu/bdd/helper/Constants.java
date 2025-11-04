@@ -12,4 +12,8 @@ public class Constants {
     // TABLAS
     public static final String TABLE_PERSONAL = "PERSONAL";
     public static final String TABLE_FACTURACION = "FACTURACION";
+
+    public static final String FIREBIRD_URL = "jdbc:firebirdsql://localhost//var/lib/firebird/3.0/data/facturacion";
+    public static final String FIREBIRD_USER = "SYSDBA";
+    public static final String FIREBIRD_PASS = "ChessMan64";
 }
