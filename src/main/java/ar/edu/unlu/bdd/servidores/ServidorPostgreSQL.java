@@ -12,47 +12,83 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import static java.lang.System.out;
+
 public class ServidorPostgreSQL {
 
-    // PostgreSQL (PERSONAL) -> 192.168.3.4:5001
-
     public static void main(String[] args) throws IOException {
-        int puertoPostgreSQL = Constants.PORT_SERVER_POSTGRESQL;
-        System.out.println("PostgreSQL escuchando en puerto " + puertoPostgreSQL);
+        int puertoServerPostgreSQL = Constants.PORT_SERVER_POSTGRESQL;
+        System.out.println("SERVER POSTGRESQL escuchando en puerto " + puertoServerPostgreSQL);
 
-        Connection conn = ServidorPostgreSQL.conectar();
+        // ✅ Crear conexión una sola vez
+        Connection conn = conectar();
 
-        try (ServerSocket serverSocket = new ServerSocket(puertoPostgreSQL)) {
+        try (ServerSocket serverSocket = new ServerSocket(puertoServerPostgreSQL)) {
             while (true) {
-                var swtServer = serverSocket.accept();
-                // Maneja el servicio a clientes de forma
-                new Thread(() -> manejarSwtServer(swtServer, conn)).start();
+                var cliente = serverSocket.accept();
+                new Thread(() -> manejarSwtServer(cliente, conn)).start();
             }
         }
     }
 
-    private static void manejarSwtServer(Socket swtServer, Connection conn) {
-        try (var in = new BufferedReader(new InputStreamReader(swtServer.getInputStream()));
-             var out = new PrintWriter(swtServer.getOutputStream(), true)) {
+    private static void manejarSwtServer(Socket cliente, Connection conn) {
+        try (var in = new BufferedReader(new InputStreamReader(cliente.getInputStream()));
+             var out = new PrintWriter(cliente.getOutputStream(), true)) {
 
-            // Leer las queries del switch
-            String querySQL = in.lines().reduce("", (a, b) -> a + b + "\n");
-            System.out.println("[PostgreSQL] Recibido del switch:\n" + querySQL);
+            // Leer SQL correctamente (no usar in.lines())
+            StringBuilder sb = new StringBuilder();
+            String linea;
+            while ((linea = in.readLine()) != null && !linea.isEmpty()) {
+                sb.append(linea).append("\n");
+            }
+            String sql = sb.toString();
 
-            String respuestaSGBD = consultar(querySQL, conn);
+            System.out.println("[ServidorPostgreSQL] SQL recibido:\n" + sql);
 
-            // Enviar la query que pidió el usuario escribiendo en el socket cliente.
-            out.println(respuestaSGBD);
+            if (sql.isEmpty()) {
+                out.println("<error>No se ha recibido una Query</error>");
+                return;
+            }
+
+            String respuesta = consultar(sql, conn);
+
+            out.println(respuesta);
             out.flush();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+
     private static String consultar(String query, Connection conn) {
-        X
+        StringBuilder resultado = new StringBuilder();
+
+        try (var stmt = conn.createStatement();
+             var rs = stmt.executeQuery(query)) {
+
+            var meta = rs.getMetaData();
+            int columnas = meta.getColumnCount();
+
+            while (rs.next()) {
+                for (int i = 1; i <= columnas; i++) {
+                    resultado.append(meta.getColumnName(i))
+                            .append("=")
+                            .append(rs.getString(i));
+                    if (i < columnas) resultado.append(", ");
+                }
+                resultado.append("\n");
+            }
+
+        } catch (Exception e) {
+            return "<error>" + e.getMessage() + "</error>";
+        }
+
+        return resultado.toString();
     }
+
+
+
 
     public static Connection conectar() {
         Connection conn = null;
