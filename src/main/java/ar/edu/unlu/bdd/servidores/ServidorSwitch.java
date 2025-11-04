@@ -12,7 +12,7 @@ import java.net.Socket;
 // Direcciones IP
 //  - Proceso Cliente -> 192.168.3.1
 //  - Proceso Servidor Switch -> 192.168.3.2
-//  - Proceso Servidor Firebird (FIREBIRD) -> 192.168.3.3
+//  - Proceso Servidor Firebird (FACTURACIÓN) -> 192.168.3.3
 //  - Proceso Servidor PostgreSQL (PERSONAL) -> 192.168.3.4
 
 // Tareas del servidor switch
