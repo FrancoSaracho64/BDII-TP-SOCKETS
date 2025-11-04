@@ -49,16 +49,25 @@ public class ServidorSwitch {
             String xml = in.lines().reduce("", (a, b) -> a + b + "\n");
             System.out.println("[Switch] Recibido del cliente:\n" + xml);
 
+            if (xml.isEmpty()) {
+                out.println("<error>No se ha recibido una consulta</error>");
+                return;
+            }
+
             String database = extraerEntre(xml, "<database>", "</database>");
             int puertoDestino = seleccionarDestino(database);
 
             String query = extraerEntre(xml, "<sql>", "</sql>");
             String respuestaSGBD = reenviar(query, puertoDestino);
 
-            String respuesta = formatearRespuesta(respuestaSGBD);
+            // Si la respuesta ya es XML, reenviarla directamente; si es error, también reenviarlo
+            String respuesta = respuestaSGBD.trim().startsWith("<") 
+                    ? respuestaSGBD 
+                    : formatearRespuesta(respuestaSGBD);
 
             // Enviar la query que pidió el usuario escribiendo en el socket cliente.
             out.println(respuesta);
+            out.flush();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -108,21 +117,24 @@ public class ServidorSwitch {
     }
 
     // Abrir un socket contra el SGBD adecuado
-    private static String reenviar(String xml, int puerto) {
+    private static String reenviar(String query, int puerto) {
         try (var socket = new Socket("localhost", puerto);
              var out = new PrintWriter(socket.getOutputStream(), true);
              var in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
             // Enviar la query que pidió el usuario escribiendo en el socket servidor.
-            out.println(xml);
-            String respuesta = in.lines().reduce("", (a, b) -> a + b + "\n");
+            out.println(query);
+            out.flush();
+            socket.shutdownOutput();
 
             // Leer la respuesta del SGBD del socket servidor.
+            String respuesta = in.lines().reduce("", (a, b) -> a + b + "\n");
             System.out.println("[Switch] Respuesta desde puerto " + puerto + ":\n" + respuesta);
             return respuesta;
 
         } catch (IOException e) {
-            return "<error>No se pudo conectar al servidor destino</error>";
+            e.printStackTrace();
+            return "<error>No se pudo conectar al servidor destino: " + e.getMessage() + "</error>";
         }
     }
 
