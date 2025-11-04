@@ -50,6 +50,13 @@ public class ServidorFirebird {
     }
 
     private static String ejecutarConsultaYGenerarXML(String sql) {
+        try {
+            // Registrar explícitamente el driver de Firebird para asegurar que esté disponible
+            Class.forName("org.firebirdsql.jdbc.FBDriver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Error al cargar el driver de Firebird: " + e.getMessage());
+        }
+        
         try (Connection conn = DriverManager.getConnection(
                 Constants.FIREBIRD_URL, Constants.FIREBIRD_USER, Constants.FIREBIRD_PASS);
              Statement stmt = conn.createStatement();
