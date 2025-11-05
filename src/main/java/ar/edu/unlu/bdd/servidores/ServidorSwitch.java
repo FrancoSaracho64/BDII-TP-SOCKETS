@@ -61,13 +61,8 @@ public class ServidorSwitch {
             String query = extraerEntre(xml, "<sql>", "</sql>");
             String respuestaSGBD = reenviar(query, hostDestino, puertoDestino);
 
-            // Si la respuesta ya es XML, reenviarla directamente; si es error, también reenviarlo
-            /*String respuesta = respuestaSGBD.trim().startsWith("<")
-                    ? respuestaSGBD 
-                    : formatearRespuesta(respuestaSGBD);*/
-
-            String respuesta = respuestaSGBD;
-            String respuestaFormateada = formatearRespuesta(respuesta);
+            // Formatear la respuesta en el formato solicitado.
+            String respuestaFormateada = formatearRespuesta(respuestaSGBD);
 
             // Enviar la query que pidió el usuario escribiendo en el socket cliente.
             out.println(respuestaFormateada);

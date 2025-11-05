@@ -65,7 +65,6 @@ public class ServidorFirebird {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             ResultSetMetaData meta = rs.getMetaData();
-            //int columnCount = meta.getColumnCount();
             int columnas = meta.getColumnCount();
 
             while (rs.next()) {
@@ -83,50 +82,5 @@ public class ServidorFirebird {
         }
 
         return resultado.toString();
-
-        /*
-            // Armar XML de columnas
-            StringBuilder xml = new StringBuilder();
-            xml.append("<query>\n");
-
-            xml.append("<cols>\n");
-            for (int i = 1; i <= columnCount; i++) {
-                xml.append("<colname").append(i).append(">")
-                        .append(meta.getColumnName(i))
-                        .append("</colname").append(i).append(">\n");
-            }
-            xml.append("</cols>\n");
-
-            // Armar XML de filas
-            xml.append("<rows>\n");
-            int rowNum = 1;
-            while (rs.next()) {
-                xml.append("<row").append(rowNum).append(">\n");
-                for (int i = 1; i <= columnCount; i++) {
-                    Object valor = rs.getObject(i);
-                    xml.append("<col").append(i).append(">")
-                            .append(valor != null ? escapeXml(valor.toString()) : "")
-                            .append("</col").append(i).append(">\n");
-                }
-                xml.append("</row").append(rowNum).append(">\n");
-                rowNum++;
-            }
-            xml.append("</rows>\n");
-            xml.append("</query>");
-
-            return xml.toString();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return "<error>" + e.getMessage() + "</error>";
-        }*/
     }
-
-    /*private static String escapeXml(String texto) {
-        return texto.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&apos;");
-    }*/
 }
