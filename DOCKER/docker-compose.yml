@@ -1,0 +1,140 @@
+services:
+  # --------------------------
+  # CLIENTE
+  # --------------------------
+  cliente:
+    image: eclipse-temurin:17-jdk
+    environment:
+      - HOST_SWITCH=192.168.3.2
+    container_name: cliente
+    networks:
+      red_interna:
+        ipv4_address: 192.168.3.7
+    volumes:
+      - ./cliente/app-cliente.jar:/app/app.jar
+    working_dir: /app
+    entrypoint: ["bash"]
+    tty: true
+    depends_on:
+      - switch
+
+  # --------------------------
+  # SWITCH SERVER
+  # --------------------------
+  switch:
+    image: eclipse-temurin:17-jdk
+    environment:
+      - HOST_FIREBIRD=192.168.3.3
+      - HOST_POSTGRESQL=192.168.3.4
+    container_name: servidor-switch
+    networks:
+      red_interna:
+        ipv4_address: 192.168.3.2
+    volumes:
+      - ./switch/app-switch.jar:/app/app.jar
+    working_dir: /app
+    command: ["java", "-jar", "app.jar"]
+    tty: true
+    depends_on:
+      - servidor-firebird
+      - servidor-postgresql
+
+  # --------------------------
+  # FIREBIRD SERVER
+  # --------------------------
+  firebird-db:
+    image: jacobalberty/firebird:3.0
+    container_name: firebird-db
+    environment:
+      - ISC_PASSWORD=masterkey
+      - FIREBIRD_DATABASE=db_facturacion.fdb
+      - FIREBIRD_USER=sysdba
+      - FIREBIRD_PASSWORD=masterkey
+    volumes:
+      - ./firebird/data:/firebird/data
+      - ./firebird/init/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+      - ./firebird/init/create_db.sql:/docker-entrypoint-initdb.d/create_db.sql
+      - ./firebird/init/post-init.sh:/post-init.sh
+    ports:
+      - "13050:3050"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '/usr/local/firebird/bin/isql -z > /dev/null 2>&1 && /post-init.sh > /dev/null 2>&1 || true; /usr/local/firebird/bin/isql -user sysdba -password masterkey localhost:/firebird/data/db_facturacion.fdb -q \"SELECT 1 FROM RDB$DATABASE;\" > /dev/null 2>&1'"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+    networks:
+      red_interna:
+        ipv4_address: 192.168.3.5
+
+  servidor-firebird:
+    image: eclipse-temurin:17-jdk
+    container_name: servidor-firebird
+    depends_on:
+      - firebird-db
+    environment:
+      - HOST_FIREBIRD_DB=192.168.3.5
+      - PORT_FIREBIRD_DB=3050
+      - FIREBIRD_DATABASE=db_facturacion.fdb
+      - FIREBIRD_USER=SYSDBA
+      - FIREBIRD_PASS=masterkey
+    networks:
+      red_interna:
+        ipv4_address: 192.168.3.3
+    volumes:
+      - ./firebird/app-firebird.jar:/app/app.jar
+    working_dir: /app
+    command: ["java", "-jar", "app.jar"]
+    tty: true
+
+  # --------------------------
+  # POSTGRES SERVER
+  # --------------------------
+  postgres-db:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=facturacion
+    volumes:
+      - ./postgresql/init:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      red_interna:
+        ipv4_address: 192.168.3.6
+    ports:
+      - "15432:5432"   # evita conflicto con PostgreSQL local
+
+  servidor-postgresql:
+    image: eclipse-temurin:17-jdk
+    container_name: servidor-postgresql
+    depends_on:
+      - postgres-db
+    environment:
+      - HOST_POSTGRESQL_DB=192.168.3.6
+      - PORT_POSTGRESQL_DB=5432
+      - POSTGRESQL_DATABASE=facturacion
+      - POSTGRESQL_USER=admin
+      - POSTGRESQL_PASS=admin
+    networks:
+      red_interna:
+        ipv4_address: 192.168.3.4
+    volumes:
+      - ./postgresql/app-postgresql.jar:/app/app.jar
+    working_dir: /app
+    command: ["java", "-jar", "app.jar"]
+    tty: true
+
+networks:
+  red_interna:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.3.0/24
+
+volumes:
+  firebird_data:
+  postgres_data:
+
+

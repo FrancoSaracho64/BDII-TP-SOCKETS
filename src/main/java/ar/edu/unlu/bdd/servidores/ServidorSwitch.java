@@ -55,10 +55,11 @@ public class ServidorSwitch {
             }
 
             String database = extraerEntre(xml, "<database>", "</database>");
+            String hostDestino = seleccionarHost(database);
             int puertoDestino = seleccionarDestino(database);
 
             String query = extraerEntre(xml, "<sql>", "</sql>");
-            String respuestaSGBD = reenviar(query, puertoDestino);
+            String respuestaSGBD = reenviar(query, hostDestino, puertoDestino);
 
             // Si la respuesta ya es XML, reenviarla directamente; si es error, también reenviarlo
             String respuesta = respuestaSGBD.trim().startsWith("<") 
@@ -108,6 +109,14 @@ public class ServidorSwitch {
         return xml.toString();
     }
 
+    private static String seleccionarHost(String database) {
+        return switch (database.toUpperCase()) {
+            case "FACTURACION" -> Constants.HOST_FIREBIRD;
+            case "PERSONAL" -> Constants.HOST_POSTGRESQL;
+            default -> Constants.HOST_FIREBIRD;
+        };
+    }
+
     private static int seleccionarDestino(String database) {
         return switch (database.toUpperCase()) {
             case "FACTURACION" -> Constants.PORT_SERVER_FIREBIRD;
@@ -117,8 +126,8 @@ public class ServidorSwitch {
     }
 
     // Abrir un socket contra el SGBD adecuado
-    private static String reenviar(String query, int puerto) {
-        try (var socket = new Socket("localhost", puerto);
+    private static String reenviar(String query, String host, int puerto) {
+        try (var socket = new Socket(host, puerto);
              var out = new PrintWriter(socket.getOutputStream(), true);
              var in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
@@ -129,7 +138,7 @@ public class ServidorSwitch {
 
             // Leer la respuesta del SGBD del socket servidor.
             String respuesta = in.lines().reduce("", (a, b) -> a + b + "\n");
-            System.out.println("[Switch] Respuesta desde puerto " + puerto + ":\n" + respuesta);
+            System.out.println("[Switch] Respuesta desde " + host + ":" + puerto + ":\n" + respuesta);
             return respuesta;
 
         } catch (IOException e) {

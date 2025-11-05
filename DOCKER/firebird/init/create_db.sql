@@ -1,0 +1,102 @@
+-- ===========================================================
+-- ESTRUCTURA DE BASE DE DATOS: FACTURACIÓN
+-- ===========================================================
+
+-- Configurar autocommit para que las transacciones se ejecuten automáticamente
+SET AUTODDL ON;
+
+-- ===========================================================
+-- GENERATORS (usar CREATE si no existe)
+-- ===========================================================
+CREATE GENERATOR GEN_FACTURA_ID;
+CREATE GENERATOR GEN_DETALLE_ID;
+CREATE GENERATOR GEN_PRODUCTO_ID;
+
+-- ===========================================================
+-- TABLA PRODUCTO
+-- ===========================================================
+CREATE TABLE PRODUCTO (
+    ID_PRODUCTO INTEGER NOT NULL,
+    NOMBRE VARCHAR(100),
+    PRECIO DECIMAL(10,2),
+    STOCK INTEGER,
+    CONSTRAINT PK_PRODUCTO PRIMARY KEY (ID_PRODUCTO)
+);
+
+-- ===========================================================
+-- TABLA FACTURA
+-- ===========================================================
+CREATE TABLE FACTURA (
+    ID_FACTURA INTEGER NOT NULL,
+    FECHA TIMESTAMP,
+    CLIENTE VARCHAR(100),
+    TOTAL DECIMAL(12,2),
+    CONSTRAINT PK_FACTURA PRIMARY KEY (ID_FACTURA)
+);
+
+-- ===========================================================
+-- TABLA DETALLE
+-- ===========================================================
+CREATE TABLE DETALLE (
+    ID_DETALLE INTEGER NOT NULL,
+    ID_FACTURA INTEGER NOT NULL,
+    ID_PRODUCTO INTEGER NOT NULL,
+    CANTIDAD INTEGER,
+    SUBTOTAL DECIMAL(10,2),
+    CONSTRAINT PK_DETALLE PRIMARY KEY (ID_DETALLE),
+    CONSTRAINT FK_DETALLE_FACTURA FOREIGN KEY (ID_FACTURA)
+        REFERENCES FACTURA (ID_FACTURA)
+        ON DELETE CASCADE,
+    CONSTRAINT FK_DETALLE_PRODUCTO FOREIGN KEY (ID_PRODUCTO)
+        REFERENCES PRODUCTO (ID_PRODUCTO)
+);
+
+-- ===========================================================
+-- TRIGGERS
+-- ===========================================================
+SET TERM !! ;
+
+CREATE TRIGGER BI_PRODUCTO FOR PRODUCTO
+ACTIVE BEFORE INSERT POSITION 0
+AS
+BEGIN
+  IF (NEW.ID_PRODUCTO IS NULL) THEN
+    NEW.ID_PRODUCTO = GEN_ID(GEN_PRODUCTO_ID, 1);
+END!!
+
+CREATE TRIGGER BI_FACTURA FOR FACTURA
+ACTIVE BEFORE INSERT POSITION 0
+AS
+BEGIN
+  IF (NEW.ID_FACTURA IS NULL) THEN
+    NEW.ID_FACTURA = GEN_ID(GEN_FACTURA_ID, 1);
+END!!
+
+CREATE TRIGGER BI_DETALLE FOR DETALLE
+ACTIVE BEFORE INSERT POSITION 0
+AS
+BEGIN
+  IF (NEW.ID_DETALLE IS NULL) THEN
+    NEW.ID_DETALLE = GEN_ID(GEN_DETALLE_ID, 1);
+END!!
+
+SET TERM ; !!
+
+-- ===========================================================
+-- DATOS INICIALES
+-- ===========================================================
+INSERT INTO PRODUCTO (NOMBRE, PRECIO, STOCK) VALUES ('Laptop Lenovo ThinkPad', 850000.00, 10);
+INSERT INTO PRODUCTO (NOMBRE, PRECIO, STOCK) VALUES ('Mouse Logitech M280', 12000.00, 50);
+INSERT INTO PRODUCTO (NOMBRE, PRECIO, STOCK) VALUES ('Monitor Samsung 24"', 210000.00, 15);
+INSERT INTO PRODUCTO (NOMBRE, PRECIO, STOCK) VALUES ('Teclado Redragon K552', 40000.00, 20);
+
+INSERT INTO FACTURA (FECHA, CLIENTE, TOTAL) VALUES ('2025-11-01 10:00:00', 'Juan Pérez', 250000.00);
+INSERT INTO FACTURA (FECHA, CLIENTE, TOTAL) VALUES ('2025-11-02 14:30:00', 'María López', 970000.00);
+
+INSERT INTO DETALLE (ID_FACTURA, ID_PRODUCTO, CANTIDAD, SUBTOTAL) VALUES (1, 2, 3, 36000.00);
+INSERT INTO DETALLE (ID_FACTURA, ID_PRODUCTO, CANTIDAD, SUBTOTAL) VALUES (1, 4, 1, 40000.00);
+INSERT INTO DETALLE (ID_FACTURA, ID_PRODUCTO, CANTIDAD, SUBTOTAL) VALUES (2, 1, 1, 850000.00);
+INSERT INTO DETALLE (ID_FACTURA, ID_PRODUCTO, CANTIDAD, SUBTOTAL) VALUES (2, 3, 1, 210000.00);
+
+COMMIT;
+

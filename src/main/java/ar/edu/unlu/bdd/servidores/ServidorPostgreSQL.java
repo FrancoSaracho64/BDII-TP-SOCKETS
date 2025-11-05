@@ -93,7 +93,11 @@ public class ServidorPostgreSQL {
     public static Connection conectar() {
         Connection conn = null;
         try {
-            conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/personal", "postgres", "1967");
+            System.out.println("[ServidorPostgreSQL] Conectando a: " + Constants.POSTGRESQL_URL);
+            conn = DriverManager.getConnection(
+                    Constants.POSTGRESQL_URL, 
+                    Constants.POSTGRESQL_USER, 
+                    Constants.POSTGRESQL_PASS);
             System.out.println("Conexión exitosa a PostgreSQL.");
         } catch (SQLException e) {
             System.out.println("Error conectando a la base de datos.");

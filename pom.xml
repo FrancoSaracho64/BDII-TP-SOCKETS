@@ -64,7 +64,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <finalName>cliente</finalName>
+                            <finalName>app-cliente</finalName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>ar.edu.unlu.bdd.clientes.Cliente</mainClass>
@@ -92,7 +92,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <finalName>servidor-switch</finalName>
+                            <finalName>app-switch</finalName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>ar.edu.unlu.bdd.servidores.ServidorSwitch</mainClass>
@@ -120,7 +120,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <finalName>servidor-firebird</finalName>
+                            <finalName>app-firebird</finalName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>ar.edu.unlu.bdd.servidores.ServidorFirebird</mainClass>
@@ -148,7 +148,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <finalName>servidor-postgresql</finalName>
+                            <finalName>app-postgresql</finalName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>ar.edu.unlu.bdd.servidores.ServidorPostgreSQL</mainClass>

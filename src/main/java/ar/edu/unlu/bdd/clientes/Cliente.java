@@ -26,7 +26,7 @@ public class Cliente {
                 """.formatted(tabla, query);
 
         System.out.println("Enviando al switch:\n" + xml);
-        try (var socket = new Socket("localhost", puertoSwitch);
+        try (var socket = new Socket(Constants.HOST_SWITCH, puertoSwitch);
              var out = new PrintWriter(socket.getOutputStream(), true);
              var in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 

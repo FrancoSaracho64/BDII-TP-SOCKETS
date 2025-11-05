@@ -57,6 +57,7 @@ public class ServidorFirebird {
             System.err.println("Error al cargar el driver de Firebird: " + e.getMessage());
         }
         
+        System.out.println("[ServidorFirebird] Conectando a: " + Constants.FIREBIRD_URL);
         try (Connection conn = DriverManager.getConnection(
                 Constants.FIREBIRD_URL, Constants.FIREBIRD_USER, Constants.FIREBIRD_PASS);
              Statement stmt = conn.createStatement();
