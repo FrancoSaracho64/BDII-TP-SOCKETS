@@ -50,13 +50,14 @@ public class ServidorFirebird {
     }
 
     private static String ejecutarConsultaYGenerarXML(String sql) {
+        StringBuilder resultado = new StringBuilder();
         try {
             // Registrar explícitamente el driver de Firebird para asegurar que esté disponible
             Class.forName("org.firebirdsql.jdbc.FBDriver");
         } catch (ClassNotFoundException e) {
             System.err.println("Error al cargar el driver de Firebird: " + e.getMessage());
         }
-        
+
         System.out.println("[ServidorFirebird] Conectando a: " + Constants.FIREBIRD_URL);
         try (Connection conn = DriverManager.getConnection(
                 Constants.FIREBIRD_URL, Constants.FIREBIRD_USER, Constants.FIREBIRD_PASS);
@@ -64,8 +65,26 @@ public class ServidorFirebird {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             ResultSetMetaData meta = rs.getMetaData();
-            int columnCount = meta.getColumnCount();
+            //int columnCount = meta.getColumnCount();
+            int columnas = meta.getColumnCount();
 
+            while (rs.next()) {
+                for (int i = 1; i <= columnas; i++) {
+                    resultado.append(meta.getColumnName(i))
+                            .append("=")
+                            .append(rs.getString(i));
+                    if (i < columnas) resultado.append(", ");
+                }
+                resultado.append("\n");
+            }
+
+        } catch (Exception e) {
+            return "<error>" + e.getMessage() + "</error>";
+        }
+
+        return resultado.toString();
+
+        /*
             // Armar XML de columnas
             StringBuilder xml = new StringBuilder();
             xml.append("<query>\n");
@@ -100,14 +119,14 @@ public class ServidorFirebird {
         } catch (SQLException e) {
             e.printStackTrace();
             return "<error>" + e.getMessage() + "</error>";
-        }
+        }*/
     }
 
-    private static String escapeXml(String texto) {
+    /*private static String escapeXml(String texto) {
         return texto.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
                 .replace("'", "&apos;");
-    }
+    }*/
 }

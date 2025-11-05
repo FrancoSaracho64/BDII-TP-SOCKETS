@@ -62,12 +62,15 @@ public class ServidorSwitch {
             String respuestaSGBD = reenviar(query, hostDestino, puertoDestino);
 
             // Si la respuesta ya es XML, reenviarla directamente; si es error, también reenviarlo
-            String respuesta = respuestaSGBD.trim().startsWith("<") 
+            /*String respuesta = respuestaSGBD.trim().startsWith("<")
                     ? respuestaSGBD 
-                    : formatearRespuesta(respuestaSGBD);
+                    : formatearRespuesta(respuestaSGBD);*/
+
+            String respuesta = respuestaSGBD;
+            String respuestaFormateada = formatearRespuesta(respuesta);
 
             // Enviar la query que pidió el usuario escribiendo en el socket cliente.
-            out.println(respuesta);
+            out.println(respuestaFormateada);
             out.flush();
 
         } catch (IOException e) {
