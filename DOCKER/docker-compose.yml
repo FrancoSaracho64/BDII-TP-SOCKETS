@@ -96,7 +96,7 @@ services:
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=facturacion
+      - POSTGRES_DB=personal
     volumes:
       - ./postgresql/init:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
@@ -112,9 +112,9 @@ services:
     depends_on:
       - postgres-db
     environment:
-      - HOST_POSTGRESQL_DB=192.168.3.6
+      - HOST_POSTGRESQL_DB=postgres-db
       - PORT_POSTGRESQL_DB=5432
-      - POSTGRESQL_DATABASE=facturacion
+      - POSTGRESQL_DATABASE=personal
       - POSTGRESQL_USER=admin
       - POSTGRESQL_PASS=admin
     networks:
@@ -122,8 +122,9 @@ services:
         ipv4_address: 192.168.3.4
     volumes:
       - ./postgresql/app-postgresql.jar:/app/app.jar
+      - ./postgresql/init/wait-for-postgres.sh:/app/wait-for-postgres.sh
     working_dir: /app
-    command: ["java", "-jar", "app.jar"]
+    command: ["bash", "wait-for-postgres.sh"]
     tty: true
 
 networks:
@@ -136,5 +137,6 @@ networks:
 volumes:
   firebird_data:
   postgres_data:
+
 
 
