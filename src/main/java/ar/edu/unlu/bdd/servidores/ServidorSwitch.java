@@ -9,23 +9,6 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-// Direcciones IP
-//  - Proceso Cliente -> 192.168.3.1
-//  - Proceso Servidor Switch -> 192.168.3.2
-//  - Proceso Servidor Firebird (FACTURACIÓN) -> 192.168.3.3
-//  - Proceso Servidor PostgreSQL (PERSONAL) -> 192.168.3.4
-
-// Tareas del servidor switch
-//  - (on start) Escuchar en algún puerto para que los clientes puedan abrir sockets hacia nosotros.
-//  - Se deben poder atender múltiples clientes concurrentemente
-//  - Leer la queries de los sockets clientes.
-//  - Interpretar la query dado el formato solicitado.
-//  - Abrir un socket contra el SGBD adecuado (personal/facturacion).
-//  - Enviar la query que pidió el usuario escribiendo en el socket servidor.
-//  - Leer la respuesta del SGBD del socket servidor.
-//  - Formatear la respuesta en el formato solicitado.
-//  - Enviar la query que pidió el usuario escribiendo en el socket cliente.
-
 public class ServidorSwitch {
     public static void main(String[] args) throws IOException {
         // Escuchar en algún puerto para que los clientes puedan abrir sockets hacia nosotros.
