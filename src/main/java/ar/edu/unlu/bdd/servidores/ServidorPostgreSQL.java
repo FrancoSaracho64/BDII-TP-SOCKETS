@@ -6,22 +6,22 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.Socket;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import static java.lang.System.out;
-
 public class ServidorPostgreSQL {
-
     public static void main(String[] args) throws IOException {
         int puertoServerPostgreSQL = Constants.PORT_SERVER_POSTGRESQL;
         System.out.println("SERVER POSTGRESQL escuchando en puerto " + puertoServerPostgreSQL);
 
-        // ✅ Crear conexión una sola vez
         Connection conn = conectar();
+        if (conn == null) {
+            System.err.println("ERROR: No se pudo establecer conexión con PostgreSQL. Abortando.");
+            System.exit(1);
+        }
 
         try (ServerSocket serverSocket = new ServerSocket(puertoServerPostgreSQL)) {
             while (true) {
@@ -60,8 +60,11 @@ public class ServidorPostgreSQL {
         }
     }
 
-
     private static String consultar(String query, Connection conn) {
+        if (conn == null) {
+            return "<error>Conexión a la base de datos no disponible</error>";
+        }
+
         StringBuilder resultado = new StringBuilder();
 
         try (var stmt = conn.createStatement();
@@ -88,15 +91,13 @@ public class ServidorPostgreSQL {
     }
 
 
-
-
     public static Connection conectar() {
         Connection conn = null;
         try {
             System.out.println("[ServidorPostgreSQL] Conectando a: " + Constants.POSTGRESQL_URL);
             conn = DriverManager.getConnection(
-                    Constants.POSTGRESQL_URL, 
-                    Constants.POSTGRESQL_USER, 
+                    Constants.POSTGRESQL_URL,
+                    Constants.POSTGRESQL_USER,
                     Constants.POSTGRESQL_PASS);
             System.out.println("Conexión exitosa a PostgreSQL.");
         } catch (SQLException e) {

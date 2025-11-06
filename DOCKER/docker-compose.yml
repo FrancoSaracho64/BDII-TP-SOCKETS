@@ -1,12 +1,14 @@
+version: "3.9"
+
 services:
   # --------------------------
   # CLIENTE
   # --------------------------
   cliente:
     image: eclipse-temurin:17-jdk
+    container_name: cliente
     environment:
       - HOST_SWITCH=192.168.3.2
-    container_name: cliente
     networks:
       red_interna:
         ipv4_address: 192.168.3.7
@@ -23,10 +25,10 @@ services:
   # --------------------------
   switch:
     image: eclipse-temurin:17-jdk
+    container_name: servidor-switch
     environment:
       - HOST_FIREBIRD=192.168.3.3
       - HOST_POSTGRESQL=192.168.3.4
-    container_name: servidor-switch
     networks:
       red_interna:
         ipv4_address: 192.168.3.2
@@ -58,7 +60,7 @@ services:
     ports:
       - "13050:3050"
     healthcheck:
-      test: ["CMD-SHELL", "bash -c '/usr/local/firebird/bin/isql -z > /dev/null 2>&1 && /post-init.sh > /dev/null 2>&1 || true; /usr/local/firebird/bin/isql -user sysdba -password masterkey localhost:/firebird/data/db_facturacion.fdb -q \"SELECT 1 FROM RDB$DATABASE;\" > /dev/null 2>&1'"]
+      test: ["CMD-SHELL", "bash -c '/usr/local/firebird/bin/isql -user sysdba -password masterkey localhost:/firebird/data/db_facturacion.fdb -q \"SELECT 1 FROM RDB$DATABASE;\" > /dev/null 2>&1'"]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -105,12 +107,19 @@ services:
         ipv4_address: 192.168.3.6
     ports:
       - "15432:5432"   # evita conflicto con PostgreSQL local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d personal"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   servidor-postgresql:
     image: eclipse-temurin:17-jdk
     container_name: servidor-postgresql
     depends_on:
-      - postgres-db
+      postgres-db:
+        condition: service_healthy
     environment:
       - HOST_POSTGRESQL_DB=postgres-db
       - PORT_POSTGRESQL_DB=5432
@@ -122,11 +131,13 @@ services:
         ipv4_address: 192.168.3.4
     volumes:
       - ./postgresql/app-postgresql.jar:/app/app.jar
-      - ./postgresql/init/wait-for-postgres.sh:/app/wait-for-postgres.sh
     working_dir: /app
-    command: ["bash", "wait-for-postgres.sh"]
+    command: ["java", "-jar", "app.jar"]
     tty: true
 
+# --------------------------
+# NETWORK & VOLUMES
+# --------------------------
 networks:
   red_interna:
     driver: bridge
@@ -137,6 +148,4 @@ networks:
 volumes:
   firebird_data:
   postgres_data:
-
-
 
